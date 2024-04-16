@@ -44,8 +44,9 @@
                     <p>
                         Sort by:
                         <select class="sort-by" onchange="app.onSetSortBy()">
-                            <option value="name">Name</option>
-                            <option value="rate" selected>Rate</option>
+                            <option value="name" selected>Name</option>
+                            <option value="rate">Rate</option>
+                            <option value="Creation-Time">Creation Time</option>
                         </select>
                         <label>
                             <input class="sort-desc" type="checkbox" oninput="app.onSetSortBy()" />

@@ -9,10 +9,10 @@ export const mapService = {
 }
 
 // TODO: Enter your API Key
-const API_KEY = ''
+const API_KEY = 'AIzaSyANWPQDqOVLxwIyhm_lA8Lm - tPwfVFxfbM'
 var gMap
 var gMarker
-
+// AIzaSyANWPQDqOVLxwIyhm_lA8Lm - tPwfVFxfbM
 function initMap(lat = 32.0749831, lng = 34.9120554) {
     return _connectGoogleApi()
         .then(() => {
