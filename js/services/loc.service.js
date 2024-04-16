@@ -69,6 +69,7 @@ function remove(locId) {
     if (!confirm('Delete location?')) return
 
     return storageService.remove(DB_KEY, locId)
+
 }
 
 function save(loc) {
