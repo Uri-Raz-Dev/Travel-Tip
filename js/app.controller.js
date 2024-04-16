@@ -41,6 +41,7 @@ function renderLocs(locs) {
         <li class="loc ${className}" data-id="${loc.id}">
             <h4>  
                 <span>${loc.name}</span>
+                <span>${loc.distance} KM</span>
                 <span title="${loc.rate} stars">${'★'.repeat(loc.rate)}</span>
             </h4>
             <p class="muted">
@@ -116,14 +117,30 @@ function onAddLoc(geo) {
 }
 
 function loadAndRenderLocs() {
-    locService.query()
-        .then(renderLocs)
+
+    mapService.getUserPosition()
+        .then(userLatLng => {
+            locService.query()
+                .then(locs => {
+
+                    locs.forEach(loc => {
+                        const locLatLng = { lat: loc.geo.lat, lng: loc.geo.lng }
+                        const distance = utilService.getDistance(userLatLng, locLatLng, 'K')
+                        loc.distance = distance
+                    })
+
+                    renderLocs(locs)
+                })
+                .catch(err => {
+                    console.error(err)
+                    flashMsg('Cannot load locations')
+                })
+        })
         .catch(err => {
-            console.error('OOPs:', err)
-            flashMsg('Cannot load locations')
+            console.error(err)
+            flashMsg('Cannot get your position')
         })
 }
-
 function onPanToUserPos() {
     mapService.getUserPosition()
         .then(latLng => {
@@ -253,47 +270,51 @@ function renderLocStats() {
     locService.getLocCountByRateMap().then(stats => {
         handleStats(stats, 'loc-stats-rate')
     })
+    locService.getLocCountByUpdateMap().then(stats => {
+        handleStats(stats, 'loc-stats-updated')
+    })
 }
 
 function handleStats(stats, selector) {
-    // stats = { low: 37, medium: 11, high: 100, total: 148 }
-    // stats = { low: 5, medium: 5, high: 5, baba: 55, mama: 30, total: 100 }
-    const labels = cleanStats(stats)
+    const labels = Object.keys(stats).filter(label => label !== 'total')
     const colors = utilService.getColors()
 
-    var sumPercent = 0
-    var colorsStr = `${colors[0]} ${0}%, `
+    let sumPercent = 0
+    let colorsStr = ''
+    let prevPercent = 0
+
     labels.forEach((label, idx) => {
-        if (idx === labels.length - 1) return
-        const count = stats[label]
+        const count = stats[label] || 0
+
         const percent = Math.round((count / stats.total) * 100, 2)
         sumPercent += percent
-        colorsStr += `${colors[idx]} ${sumPercent}%, `
-        if (idx < labels.length - 1) {
-            colorsStr += `${colors[idx + 1]} ${sumPercent}%, `
-        }
-    })
 
-    colorsStr += `${colors[labels.length - 1]} ${100}%`
-    // Example:
-    // colorsStr = `purple 0%, purple 33%, blue 33%, blue 67%, red 67%, red 100%`
+        colorsStr += `${colors[idx]} ${prevPercent}%, ${colors[idx]} ${sumPercent}%`
+        if (idx < labels.length - 1) {
+            colorsStr += ', '
+        }
+
+        prevPercent = sumPercent
+    })
 
     const elPie = document.querySelector(`.${selector} .pie`)
     const style = `background-image: conic-gradient(${colorsStr})`
     elPie.style = style
 
     const ledendHTML = labels.map((label, idx) => {
+        const count = stats[label] || 0
         return `
-                <li>
-                    <span class="pie-label" style="background-color:${colors[idx]}"></span>
-                    ${label} (${stats[label]})
-                </li>
-            `
+            <li>
+                <span class="pie-label" style="background-color:${colors[idx]}"></span>
+                ${label} (${count})
+            </li>
+        `
     }).join('')
 
     const elLegend = document.querySelector(`.${selector} .legend`)
     elLegend.innerHTML = ledendHTML
 }
+
 
 function cleanStats(stats) {
     const cleanedStats = Object.keys(stats).reduce((acc, label) => {
