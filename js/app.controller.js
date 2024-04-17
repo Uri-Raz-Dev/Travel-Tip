@@ -95,26 +95,29 @@ function onSearchAddress(ev) {
         })
 }
 
-function onAddLoc(geo) {
-    const locName = prompt('Loc name', geo.address || 'Just a place')
-    if (!locName) return
+// function onAddLoc(geo) {
+//     const locName = prompt('Loc name', geo.address || 'Just a place')
+//     if (!locName) return
 
-    const loc = {
-        name: locName,
-        rate: +prompt(`Rate (1-5)`, '3'),
-        geo
-    }
-    locService.save(loc)
-        .then((savedLoc) => {
-            flashMsg(`Added Location (id: ${savedLoc.id})`)
-            utilService.updateQueryParams({ locId: savedLoc.id })
-            loadAndRenderLocs()
-        })
-        .catch(err => {
-            console.error('OOPs:', err)
-            flashMsg('Cannot add location')
-        })
-}
+//     const loc = {
+//         name: locName,
+//         rate: +prompt(`Rate (1-5)`, '3'),
+//         geo,
+//         distance
+//     }
+//     locService.save(loc)
+//         .then((savedLoc) => {
+//             flashMsg(`Added Location (id: ${savedLoc.id})`)
+//             utilService.updateQueryParams({ locId: savedLoc.id })
+//             loadAndRenderLocs()
+//         })
+//         .catch(err => {
+//             console.error('OOPs:', err)
+//             flashMsg('Cannot add location')
+//         })
+// }
+
+
 
 function loadAndRenderLocs() {
 
@@ -130,6 +133,7 @@ function loadAndRenderLocs() {
                     })
 
                     renderLocs(locs)
+                    console.log(locs);
                 })
                 .catch(err => {
                     console.error(err)
@@ -155,25 +159,25 @@ function onPanToUserPos() {
         })
 }
 
-function onUpdateLoc(locId) {
-    locService.getById(locId)
-        .then(loc => {
-            const rate = prompt('New rate?', loc.rate)
-            if (rate !== loc.rate) {
-                loc.rate = rate
-                locService.save(loc)
-                    .then(savedLoc => {
-                        flashMsg(`Rate was set to: ${savedLoc.rate}`)
-                        loadAndRenderLocs()
-                    })
-                    .catch(err => {
-                        console.error('OOPs:', err)
-                        flashMsg('Cannot update location')
-                    })
+// function onUpdateLoc(locId) {
+//     locService.getById(locId)
+//         .then(loc => {
+//             const rate = prompt('New rate?', loc.rate)
+//             if (rate !== loc.rate) {
+//                 loc.rate = rate
+//                 locService.save(loc)
+//                     .then(savedLoc => {
+//                         flashMsg(`Rate was set to: ${savedLoc.rate}`)
+//                         loadAndRenderLocs()
+//                     })
+//                     .catch(err => {
+//                         console.error('OOPs:', err)
+//                         flashMsg('Cannot update location')
+//                     })
 
-            }
-        })
-}
+//             }
+//         })
+// }
 
 function onSelectLoc(locId) {
     return locService.getById(locId)
@@ -185,6 +189,7 @@ function onSelectLoc(locId) {
 }
 
 function displayLoc(loc) {
+    console.log(loc);
     document.querySelector('.loc.active')?.classList?.remove('active')
     document.querySelector(`.loc[data-id="${loc.id}"]`).classList.add('active')
 
@@ -194,6 +199,7 @@ function displayLoc(loc) {
     const el = document.querySelector('.selected-loc')
     el.querySelector('.loc-name').innerText = loc.name
     el.querySelector('.loc-address').innerText = loc.geo.address
+    el.querySelector('.loc-distance').innerText = loc.distance
     el.querySelector('.loc-rate').innerHTML = '★'.repeat(loc.rate)
     el.querySelector('[name=loc-copier]').value = window.location
     el.classList.add('show')
