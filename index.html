@@ -27,6 +27,25 @@
         </form>
     </header>
     <main>
+        <div id="addLocDialog" class="dialog">
+            <h2>Add Location</h2>
+            <input type="text" id="locNameInput" placeholder="Location Name">
+            <input type="number" id="rateInput" placeholder="Rate (1-5)">
+            <button onclick="app.addLocation()">Add</button>
+            <button onclick="app.closeDialog('addLocDialog')">Cancel</button>
+        </div>
+
+        <div id="updateLocationDialog" class="dialog">
+            <label for="newNameInput">New Name:</label>
+            <input type="text" id="newNameInput" placeholder="Enter new name" required>
+
+            <label for="newRateInput">New Rate (1-5):</label>
+            <input type="number" id="newRateInput" min="1" max="5" placeholder="Rate" required>
+
+            <button onclick="app.saveUpdatedLoc()">Save</button>
+            <button onclick="app.closeDialog('updateLocationDialog')">Cancel</button>
+        </div>
+
         <div class="map"></div>
         <div>
             <section class="locs-container">

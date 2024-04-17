@@ -16,6 +16,7 @@ window.app = {
     onShareLoc,
     onSetSortBy,
     onSetFilterBy,
+    closeDialog
 }
 
 function onInit() {
@@ -95,29 +96,88 @@ function onSearchAddress(ev) {
         })
 }
 
-// function onAddLoc(geo) {
-//     const locName = prompt('Loc name', geo.address || 'Just a place')
-//     if (!locName) return
-
-//     const loc = {
-//         name: locName,
-//         rate: +prompt(`Rate (1-5)`, '3'),
-//         geo,
-//         distance
-//     }
-//     locService.save(loc)
-//         .then((savedLoc) => {
-//             flashMsg(`Added Location (id: ${savedLoc.id})`)
-//             utilService.updateQueryParams({ locId: savedLoc.id })
-//             loadAndRenderLocs()
-//         })
-//         .catch(err => {
-//             console.error('OOPs:', err)
-//             flashMsg('Cannot add location')
-//         })
-// }
 
 
+function onAddLoc(geo) {
+    const addLocDialog = document.getElementById('addLocDialog')
+    addLocDialog.style.display = 'block'
+
+    // Add event listener to 'Add' button inside the dialog
+    const addButton = addLocDialog.querySelector('button')
+    addButton.addEventListener('click', () => {
+        const locName = document.getElementById('locNameInput').value
+        const rate = document.getElementById('rateInput').value
+
+        if (!locName || !rate || rate > 5 || rate < 1) {
+            alert('Please fill out all fields.')
+            return
+        }
+
+        const loc = {
+            name: locName,
+            rate: +rate,
+            geo,
+            distance: calculateDistance(geo)
+        }
+
+        locService.save(loc)
+            .then((savedLoc) => {
+                flashMsg(`Added Location (id: ${savedLoc.id})`)
+                utilService.updateQueryParams({ locId: savedLoc.id })
+                loadAndRenderLocs()
+                closeDialog('addLocDialog')
+            })
+            .catch(err => {
+                console.error('OOPs:', err)
+                flashMsg('Cannot add location')
+                closeDialog('addLocDialog')
+            })
+    })
+}
+
+function onUpdateLoc(locId) {
+    const updateLocationDialog = document.getElementById('updateLocationDialog')
+    updateLocationDialog.style.display = 'block'
+
+    const saveButton = updateLocationDialog.querySelector('button')
+    saveButton.addEventListener('click', saveUpdatedLoc)
+
+    function saveUpdatedLoc() {
+        const newName = document.getElementById('newNameInput').value
+        const newRate = parseInt(document.getElementById('newRateInput').value)
+
+        if (newRate < 1 || newRate > 5 || newName === '') {
+            alert('Rating must be between 1 and 5')
+            return
+        }
+
+        locService.getById(locId)
+            .then(loc => {
+                loc.name = newName
+                loc.rate = newRate
+
+                return locService.save(loc)
+            })
+            .then(savedLoc => {
+                flashMsg(`Location updated: ${savedLoc.name}, Rate: ${savedLoc.rate}`)
+                loadAndRenderLocs()
+                closeDialog('updateLocationDialog')
+            })
+            .catch(err => {
+                console.error('OOPs:', err)
+                flashMsg('Cannot update location')
+                closeDialog('updateLocationDialog')
+            })
+    }
+}
+function closeDialog(dialogId) {
+    const dialog = document.getElementById(dialogId)
+    dialog.style.display = 'none'
+}
+
+function calculateDistance(geo) {
+    return 0
+}
 
 function loadAndRenderLocs() {
 
@@ -159,25 +219,7 @@ function onPanToUserPos() {
         })
 }
 
-// function onUpdateLoc(locId) {
-//     locService.getById(locId)
-//         .then(loc => {
-//             const rate = prompt('New rate?', loc.rate)
-//             if (rate !== loc.rate) {
-//                 loc.rate = rate
-//                 locService.save(loc)
-//                     .then(savedLoc => {
-//                         flashMsg(`Rate was set to: ${savedLoc.rate}`)
-//                         loadAndRenderLocs()
-//                     })
-//                     .catch(err => {
-//                         console.error('OOPs:', err)
-//                         flashMsg('Cannot update location')
-//                     })
 
-//             }
-//         })
-// }
 
 function onSelectLoc(locId) {
     return locService.getById(locId)
